@@ -20,32 +20,185 @@
   <!--[if lte IE 9]>
     <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
   <![endif]-->
+  <!--<div id="info">-->
+    <!--<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - <span id="protoplanets"></span> webgl gpgpu debris<br/>-->
+    <!--Select <span id="options"></span> debris<br/>-->
+    <!--<span id="warning"></span>-->
+  <!--</div>-->
 
   <!-- Add your site or application content here -->
   <script src="js/three.js"></script>
   <script src="js/OrbitControls.js"></script>
   <script src="js/dat.gui.min.js"></script>
+  <script src="js/libs/stats.min.js"></script>
+  <script src="js/Detector.js"></script>
+  <script src="js/GLTFLoader.js"></script>
+  <script src="js/GPUComputationRenderer.js"></script>
+
   <!--<script src="js/vendor/modernizr-{{MODERNIZR_VERSION}}.min.js"></script>-->
   <!--<script src="https://code.jquery.com/jquery-{{JQUERY_VERSION}}.min.js" integrity="{{JQUERY_SRI_HASH}}" crossorigin="anonymous"></script>-->
   <!--<script>window.jQuery || document.write('<script src="js/vendor/jquery-{{JQUERY_VERSION}}.min.js"><\/script>')</script>-->
   <!--<script src="js/plugins.js"></script>-->
   <!--<script src="js/main.js"></script>-->
 
-
   <script>
-    var options ={
-      rangeStart:1000000,
-      rangeEnd:2000000,
-    };
 
-    //GUI
-    var gui = new dat.GUI();
+    if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 
-    gui.add(options, "rangeStart", 1000000,2000000, 1);
-    gui.add(options, "rangeEnd", 1000000, 2000000, 1);
-    gui.open();
+    var isIE = /Trident/i.test( navigator.userAgent );
+    var isEdge = /Edge/i.test( navigator.userAgent );
 
-    generateUniverse(15);
+    var hash = document.location.hash.substr( 1 );
+
+    if ( hash ) hash = parseInt( hash, 0 );
+
+    // Texture width for simulation (each texel is a debris particle)
+    var WIDTH = hash || ( ( isIE || isEdge ) ? 4 : 64 );
+
+    var container, stats;
+    var camera, scene, renderer, geometry, controls;
+
+    var particle;
+
+    function change( n ) {
+
+      location.hash = n;
+      location.reload();
+      return false;
+
+    }
+
+    var Controller;
+
+    init();
+    animate();
+
+    function init() {
+      var space = "#151718";
+      container = document.createElement( 'div' );
+      document.body.appendChild( container );
+
+      camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 5, 15000 );
+      camera.position.y = 120;
+      camera.position.z = 400;
+
+      scene = new THREE.Scene();
+
+      renderer = new THREE.WebGLRenderer();
+      renderer.setPixelRatio( window.devicePixelRatio );
+      renderer.setSize( window.innerWidth, window.innerHeight );
+      container.appendChild( renderer.domElement );
+
+      controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+      Controller = {
+        // Can be changed dynamically
+        Start: 1000000,
+        End: 2000000,
+
+        // Must restart simulation
+        radius: 300,
+        height: 8,
+        exponent: 0.4,
+        maxMass: 15.0,
+        velocity: 70,
+        velocityExponent: 0.2,
+        randVelocity: 0.001
+      };
+
+      // initComputeRenderer();
+
+      stats = new Stats();
+      container.appendChild( stats.dom );
+
+      window.addEventListener( 'resize', onWindowResize, false );
+
+      initGUI();
+      // loader();
+      generateSphere(1);
+      dynamicValuesChanger();
+
+
+    }
+
+    function generateParticle() {
+
+    }
+    function generateSphere(size) {
+      var geometry = new THREE.SphereGeometry(size, 64, 64 );
+      var material = new THREE.MeshBasicMaterial( {color: 0xffff00} );
+      var sphere = new THREE.Mesh( geometry, material );
+      scene.add(sphere)
+    }
+
+    function loader() {
+      var loader = new THREE.GLTFLoader();
+      loader.load('assets/solar_system/scene.gltf', function (gltf) {
+        // gltf.scene.traverse(function (child) {
+        //   // if(child.isMesh){
+        //   //   child.material.envMap = envMap;
+        //   // }
+        // })
+        scene.add(gltf.scene);
+      })
+    }
+
+    function onWindowResize() {
+
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+
+      renderer.setSize( window.innerWidth, window.innerHeight );
+    }
+
+    function dynamicValuesChanger() {
+
+    }
+
+    function initGUI() {
+
+      var gui = new dat.GUI();
+
+      var folder1 = gui.addFolder( 'Planet Range' );
+
+      folder1.add( Controller, "Start", 1000000, 2000000, 1 ).onChange( dynamicValuesChanger );
+      folder1.add( Controller, "End", 1000000, 2000000, 1 ).onChange( dynamicValuesChanger );
+
+      var folder2 = gui.addFolder( 'Static parameters - press restartSimulation' );
+
+      folder2.add( Controller, "radius", 10.0, 1000.0, 1.0 );
+
+      folder1.open();
+      folder2.open();
+
+    }
+
+    function getCameraConstant( camera ) {
+
+      return window.innerHeight / ( Math.tan( THREE.Math.DEG2RAD * 0.5 * camera.fov ) / camera.zoom );
+
+    }
+
+
+    function animate() {
+
+      requestAnimationFrame( animate );
+
+      render();
+      stats.update();
+
+    }
+
+    function render() {
+      renderer.render( scene, camera );
+
+    }
+
+  </script>
+  <script>
+
+
+    generateUniverse(20);
 
     function generateUniverse(galaxies) {
     // setting the scene

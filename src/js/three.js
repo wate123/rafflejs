@@ -23826,7 +23826,7 @@
 
 			} else if ( fog.isFogExp2 ) {
 
-				uniforms.fogDensity.value = fog.density;
+				uniforms.fogDensity.value = fog.End;
 
 			}
 
@@ -24347,7 +24347,7 @@
 		return {
 			type: 'FogExp2',
 			color: this.color.getHex(),
-			density: this.density
+			End: this.density
 		};
 
 	};
@@ -38403,7 +38403,7 @@
 
 						} else if ( data.fog.type === 'FogExp2' ) {
 
-							object.fog = new FogExp2( data.fog.color, data.fog.density );
+							object.fog = new FogExp2( data.fog.color, data.fog.End );
 
 						}
 
