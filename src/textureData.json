@@ -1,0 +1,20 @@
+[
+  {
+    "Solar_System":{
+      "Sun":{
+        "Size": 109.3,
+        "map": "assets/solar_system/textures/sun/8k_sun.jpg"
+      },
+      "Mercury":{
+        "Size": 0.3829,
+        "map": "assets/solar_system/textures/mercury/8k_mercury.jpg"
+      },
+      "Earth":{
+        "Size": 1,
+        "map":"assets/solar_system/textures/earth/8k_earth_daymap.jpg",
+        "bumpMap": "assets/solar_system/textures/earth/earthbump1k.jpg",
+        "specularMap": "assets/solar_system/textures/earth/8k_earth_specular_map.tif"
+      }
+    }
+  }
+]
